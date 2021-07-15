@@ -16,13 +16,13 @@ inputs:
     description: "The bucket where the app bundle is uploaded"
     required: false
     default: "elasticbeanstalk-us-east-1-518640797791"
-  app_name:
+  app-name:
     description: "The name of the EB application"
     required: true
-  env_name:
+  env-name:
     description: "The name of the EB environment"
     required: false
-    default: "$INPUT_APP_NAME"
+    default: "$INPUT_app-name"
   version-label:
     description: "The version label for the the application version to be deployed"
     required: false
