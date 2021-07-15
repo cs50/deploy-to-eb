@@ -9,11 +9,11 @@ In the workflow file:
 ```
     - uses: cs50/deploy-to-eb@main
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-default-region: region # optional (default: us-east-1)
-        app-name: "app"
-        version-label: ${{ github.sha }}
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws_default_region: region # optional (default: us-east-1)
+        app_name: "app"
+        version_label: label # optional (default: commit sha)
         bucket: "bucket" # optional (default: elasticbeanstalk-us-east-1-518640797791)
-        env-name: "env" # optional (default: the value of app-name)
+        env_name: "env" # optional (default: the value of app-name)
 ```
