@@ -2,23 +2,19 @@
 
 set -e -o pipefail
 
-# Input paramaters
+# Renamed input paramaters
 AWS_ACCESS_KEY_ID="$INPUT_AWS_ACCESS_KEY_ID"
 AWS_SECRET_ACCESS_KEY="$INPUT_AWS_SECRET_ACCESS_KEY"
-AWS_DEFAULT_REGION="${INPUT_AWS_DEFAULT_REGION:=us-east-1}"
-BUCKET="${INPUT_BUCKET:=elasticbeanstalk-us-east-1-518640797791}"
-APP_NAME="$INPUT_APP_NAME"
-ENV_NAME="${$INPUT_ENV_NAME:=$APP_NAME}"
-VERSION_LABEL="$INPUT_VERSION_LABEL"
+AWS_DEFAULT_REGION="$INPUT_AWS_DEFAULT_REGION"
 
-ZIP_NAME="$APP_NAME-$INPUT_VERSION_LABEL.zip"
+ZIP_NAME="$INPUT_APP_NAME-$INPUT_VERSION_LABEL.zip"
 
 echo "Creating app bundle..."
 zip -r "$ZIP_NAME" . -x 'docker*' '.git*'
 
 env_ready() {
   aws elasticbeanstalk describe-environment-health \
-    --environment-name "$ENV_NAME" \
+    --environment-name "$INPUT_ENV_NAME" \
     --attribute-names Status | grep -q '"Status": "Ready"'
 }
 
@@ -28,20 +24,20 @@ env_ready
 
 # Upload zip to S3
 echo "Uploading app version..."
-aws s3 cp "$ZIP_NAME" "s3://$INPUT_BUCKET/$APP_NAME/"
+aws s3 cp "$ZIP_NAME" "s3://$INPUT_INPUT_BUCKET/$INPUT_APP_NAME/"
 
 # Create new application version
 echo "Creating a new app version..."
 aws elasticbeanstalk create-application-version \
-  --application-name "$APP_NAME" \
+  --application-name "$INPUT_APP_NAME" \
   --version-label "$INPUT_VERSION_LABEL" \
-  --source-bundle S3Bucket="$BUCKET",S3Key="$APP_NAME/$ZIP_NAME"
+  --source-bundle S3Bucket="$INPUT_BUCKET",S3Key="$INPUT_APP_NAME/$ZIP_NAME"
 
 # Deploy application version
 echo "Updating environment..."
 aws elasticbeanstalk update-environment \
-  --application-name "$APP_NAME" \
-  --environment-name "$ENV_NAME" \
+  --application-name "$INPUT_APP_NAME" \
+  --environment-name "$INPUT_ENV_NAME" \
   --version-label "$INPUT_VERSION_LABEL"
 
 # Wait until environment is ready
@@ -56,5 +52,5 @@ done
 
 # Check if dpeloyment succeeded
 env_ready && aws elasticbeanstalk describe-environments \
-  --application-name "$APP_NAME" \
-  --environment-names "$ENV_NAME" | grep -q "$INPUT_VERSION_LABEL"
+  --application-name "$INPUT_APP_NAME" \
+  --environment-names "$INPUT_ENV_NAME" | grep -q "$INPUT_VERSION_LABEL"
