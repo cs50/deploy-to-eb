@@ -9,7 +9,10 @@ In the workflow file:
 ```
     - uses: cs50/deploy-to-eb@main
       with:
-        app_name: "app"
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-default-region: region # optional
+        app-name: "app"
         bucket: "bucket" # optional
-        env_name: "env" # optional
+        env-name: "env" # optional
 ```
