@@ -27,4 +27,6 @@ inputs:
     description: "The version label for the the application version to be deployed"
     required: false
     default: "$GITHUB_SHA"
-
+runs:
+  using: "docker"
+  image: "Dockerfile"
