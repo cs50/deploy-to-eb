@@ -1,7 +1,6 @@
-FROM python:3.9-slim
+FROM amazon/aws-cli
 
-RUN pip install awscli
-RUN apt-get update && apt-get install -y zip
+RUN yum update && yum install -y zip
 
 COPY ./docker-entrypoint /
 RUN chmod 755 /docker-entrypoint
