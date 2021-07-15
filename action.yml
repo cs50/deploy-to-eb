@@ -2,13 +2,13 @@ name: "deploy-to-eb"
 author: "CS50"
 description: "Deploys an app to AWS Elastic Beanstalk."
 inputs:
-  aws-access-key-id:
+  aws_access_key_id:
     description: "The AWS access key ID used for authentication"
     required: true
-  aws-secret-access-key:
+  aws_secret_access_key:
     description: "The AWS secret access key used for authentication"
     required: true
-  aws-default-region:
+  aws_default_region:
     description: "The AWS region where the bucket and EB env are"
     required: false
     default: us-east-1
@@ -16,14 +16,14 @@ inputs:
     description: "The bucket where the app bundle is uploaded"
     required: false
     default: "elasticbeanstalk-us-east-1-518640797791"
-  app-name:
+  app_name:
     description: "The name of the EB application"
     required: true
-  env-name:
+  env_name:
     description: "The name of the EB environment"
     required: false
     default: "$INPUT_app-name"
-  version-label:
+  version_label:
     description: "The version label for the the application version to be deployed"
     required: false
     default: "$GITHUB_SHA"
