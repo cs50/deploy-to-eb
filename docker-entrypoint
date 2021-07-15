@@ -9,7 +9,7 @@ export AWS_DEFAULT_REGION="$INPUT_AWS_DEFAULT_REGION"
 
 # Default inputs from env
 INPUT_ENV_NAME="${INPUT_ENV_NAME:=$INPUT_APP_NAME}"
-INPUT_VERSION_LABEL="${INPUT_VERSION_LABEL:=$GITHUB_SHA}"
+INPUT_VERSION_LABEL="${INPUT_VERSION_LABEL:=${$(uuidgen)//-}}"
 
 ZIP_NAME="$INPUT_APP_NAME-$INPUT_VERSION_LABEL.zip"
 
@@ -40,6 +40,7 @@ aws s3 cp "$ZIP_NAME" "s3://$INPUT_BUCKET/$INPUT_APP_NAME/"
 yellow "Creating a new app version..."
 aws elasticbeanstalk create-application-version \
   --application-name "$INPUT_APP_NAME" \
+  --description "$GITHUB_SHA" \
   --version-label "$INPUT_VERSION_LABEL" \
   --source-bundle S3Bucket="$INPUT_BUCKET",S3Key="$INPUT_APP_NAME/$ZIP_NAME"
 
