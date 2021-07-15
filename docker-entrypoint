@@ -12,9 +12,14 @@ INPUT_ENV_NAME="${INPUT_ENV_NAME:=$INPUT_APP_NAME}"
 INPUT_VERSION_LABEL="${INPUT_VERSION_LABEL:=$GITHUB_SHA}"
 
 ZIP_NAME="$INPUT_APP_NAME-$INPUT_VERSION_LABEL.zip"
-echo "App bundle name: $ZIP_NAME"
 
-echo "Creating app bundle..."
+yellow() {
+    echo -e "\033[33m$1\033[0m"
+}
+
+yellow "App bundle name: $ZIP_NAME"
+
+yellow "Creating app bundle..."
 zip -r "$ZIP_NAME" . -x 'docker*' '.git*'
 
 env_ready() {
@@ -24,29 +29,29 @@ env_ready() {
 }
 
 # Ensure environment is ready
-echo "Ensuring enviornment is ready..."
+yellow "Ensuring enviornment is ready..."
 env_ready
 
 # Upload zip to S3
-echo "Uploading app version..."
+yellow "Uploading app version..."
 aws s3 cp "$ZIP_NAME" "s3://$INPUT_BUCKET/$INPUT_APP_NAME/"
 
 # Create new application version
-echo "Creating a new app version..."
+yellow "Creating a new app version..."
 aws elasticbeanstalk create-application-version \
   --application-name "$INPUT_APP_NAME" \
   --version-label "$INPUT_VERSION_LABEL" \
   --source-bundle S3Bucket="$INPUT_BUCKET",S3Key="$INPUT_APP_NAME/$ZIP_NAME"
 
 # Deploy application version
-echo "Updating environment..."
+yellow "Updating environment..."
 aws elasticbeanstalk update-environment \
   --application-name "$INPUT_APP_NAME" \
   --environment-name "$INPUT_ENV_NAME" \
   --version-label "$INPUT_VERSION_LABEL"
 
 # Wait until environment is ready
-echo "Waiting until update is complete..."
+yellow "Waiting until update is complete..."
 sleep 60
 retries=10
 curr_retry=0
