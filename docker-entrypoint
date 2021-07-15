@@ -8,6 +8,7 @@ AWS_SECRET_ACCESS_KEY="$INPUT_AWS_SECRET_ACCESS_KEY"
 AWS_DEFAULT_REGION="$INPUT_AWS_DEFAULT_REGION"
 
 ZIP_NAME="$INPUT_APP_NAME-$INPUT_VERSION_LABEL.zip"
+echo "App bundle name: $ZIP_NAME"
 
 echo "Creating app bundle..."
 zip -r "$ZIP_NAME" . -x 'docker*' '.git*'
