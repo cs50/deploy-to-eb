@@ -9,7 +9,7 @@ export AWS_DEFAULT_REGION="$INPUT_AWS_DEFAULT_REGION"
 
 # Default inputs from env
 INPUT_ENV_NAME="${INPUT_ENV_NAME:=$INPUT_APP_NAME}"
-UUID="$(uuidgen)"
+UUID="$(python -c 'import uuid; print(uuid.uuid4().hex)')"
 INPUT_VERSION_LABEL="${INPUT_VERSION_LABEL:=${UUID//-}}"
 
 ZIP_NAME="$INPUT_APP_NAME-$INPUT_VERSION_LABEL.zip"
