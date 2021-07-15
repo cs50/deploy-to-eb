@@ -63,6 +63,7 @@ until env_ready && [[ curr_retry -le retries ]]; do
 done
 
 # Check if dpeloyment succeeded
+yellow "Checking if deployment succeeded..."
 env_ready && aws elasticbeanstalk describe-environments \
   --application-name "$INPUT_APP_NAME" \
   --environment-names "$INPUT_ENV_NAME" | grep -q "$INPUT_VERSION_LABEL"
