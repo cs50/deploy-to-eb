@@ -41,7 +41,7 @@ aws s3 cp "$ZIP_NAME" "s3://$INPUT_BUCKET/$INPUT_APP_NAME/"
 yellow "Creating a new app version..."
 aws elasticbeanstalk create-application-version \
   --application-name "$INPUT_APP_NAME" \
-  --description "$GITHUB_SHA" \
+  --description "Commit $GITHUB_SHA" \
   --version-label "$INPUT_VERSION_LABEL" \
   --source-bundle S3Bucket="$INPUT_BUCKET",S3Key="$INPUT_APP_NAME/$ZIP_NAME"
 
