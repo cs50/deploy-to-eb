@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Input paramaters
+BUCKET="${INPUT_BUCKET:=elasticbeanstalk-us-east-1-518640797791}"
+APP_NAME="$INPUT_APP_NAME"
+ENV_NAME="${$INPUT_ENV_NAME:=$APP_NAME}"
+
+ZIP_NAME="$APP_NAME-$INPUT_VERSION_LABEL.zip"
+
+echo "Creating app bundle..."
+zip -r "$ZIP_NAME" . -x 'docker*' '.git*'
+
+env_ready() {
+  aws elasticbeanstalk describe-environment-health \
+    --environment-name "$ENV_NAME" \
+    --attribute-names Status | grep -q '"Status": "Ready"'
+}
+
+# Ensure environment is ready
+echo "Ensuring enviornment is ready..."
+env_ready
+
+# Upload zip to S3
+echo "Uploading app version..."
+aws s3 cp "$ZIP_NAME" "s3://$INPUT_BUCKET/$APP_NAME/"
+
+# Create new application version
+echo "Creating a new app version..."
+aws elasticbeanstalk create-application-version \
+  --application-name "$APP_NAME" \
+  --version-label "$INPUT_VERSION_LABEL" \
+  --source-bundle S3Bucket="$BUCKET",S3Key="$APP_NAME/$ZIP_NAME"
+
+# Deploy application version
+echo "Updating environment..."
+aws elasticbeanstalk update-environment \
+  --application-name "$APP_NAME" \
+  --environment-name "$ENV_NAME" \
+  --version-label "$INPUT_VERSION_LABEL"
+
+# Wait until environment is ready
+echo "Waiting until update is complete..."
+sleep 60
+retries=10
+curr_retry=0
+until env_ready && [[ curr_retry -le retries ]]; do
+  sleep $(( 2 ** $curr_retry ))
+  curr_retry=$(( $curr_retry + 1 ))
+done
+
+# Check if dpeloyment succeeded
+env_ready && aws elasticbeanstalk describe-environments \
+  --application-name "$APP_NAME" \
+  --environment-names "$ENV_NAME" | grep -q "$INPUT_VERSION_LABEL"
