@@ -29,7 +29,7 @@ env_ready
 
 # Upload zip to S3
 echo "Uploading app version..."
-aws s3 cp "$ZIP_NAME" "s3://$INPUT_INPUT_BUCKET/$INPUT_APP_NAME/"
+aws s3 cp "$ZIP_NAME" "s3://$INPUT_BUCKET/$INPUT_APP_NAME/"
 
 # Create new application version
 echo "Creating a new app version..."
