@@ -58,7 +58,7 @@ yellow "Waiting until update is complete..."
 sleep 60
 retries=10
 curr_retry=0
-until env_ready && [[ curr_retry -le retries ]]; do
+until env_ready && [[ curr_retry -lt retries ]]; do
   sleep $(( 2 ** $curr_retry ))
   curr_retry=$(( $curr_retry + 1 ))
 done
