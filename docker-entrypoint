@@ -18,6 +18,10 @@ yellow() {
     echo -e "\033[33m$1\033[0m"
 }
 
+red() {
+    echo -e "\033[31m$1\033[0m"
+}
+
 yellow "App bundle name: $ZIP_NAME"
 
 yellow "Creating app bundle..."
@@ -57,8 +61,12 @@ aws elasticbeanstalk update-environment \
 yellow "Waiting until update is complete..."
 sleep 60
 retries=10
-curr_retry=0
-until env_ready && [[ curr_retry -lt retries ]]; do
+curr_retry=1
+until env_ready; do
+  if [[ $curr_retry -ge $retries ]]; then
+    red "Timed out before environment $INPUT_ENV_NAME was ready"
+    exit 1
+  fi
   sleep $(( 2 ** $curr_retry ))
   curr_retry=$(( $curr_retry + 1 ))
 done
