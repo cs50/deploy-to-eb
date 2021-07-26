@@ -25,7 +25,7 @@ red() {
 yellow "App bundle name: $ZIP_NAME"
 
 yellow "Creating app bundle..."
-zip -r "$ZIP_NAME" . -x 'docker*' '.git*'
+zip -r "$ZIP_NAME" . -x 'docker-compose*' '.git*'
 
 env_ready() {
   aws elasticbeanstalk describe-environment-health \
