@@ -38,7 +38,16 @@ env_ready() {
 
 # Ensure environment is ready
 yellow "Ensuring enviornment is ready..."
-env_ready
+max_retries=30
+curr_retry=1
+until env_ready; do
+  if [[ $curr_retry -gt $max_retries ]]; then
+    red "Timed out before environment $INPUT_ENV_NAME was ready"
+    exit 1
+  fi
+  sleep 60 # wait for 1 minute
+  curr_retry=$(( $curr_retry + 1 ))
+done
 
 # Upload zip to S3
 yellow "Uploading app version..."
