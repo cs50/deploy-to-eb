@@ -63,16 +63,17 @@ aws elasticbeanstalk update-environment \
 # Wait until environment is ready
 yellow "Waiting until update is complete..."
 sleep 60
-retries=11
+max_retries=30
 curr_retry=1
 until env_ready; do
-  if [[ $curr_retry -ge $retries ]]; then
+  if [[ $curr_retry -gt $max_retries ]]; then
     red "Timed out before environment $INPUT_ENV_NAME was ready"
     exit 1
   fi
-  sleep $(( 2 ** $curr_retry ))
+  sleep 60 # wait for 1 minute
   curr_retry=$(( $curr_retry + 1 ))
 done
+
 
 # Check if dpeloyment succeeded
 yellow "Checking if deployment succeeded..."
