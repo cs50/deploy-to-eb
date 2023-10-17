@@ -63,7 +63,7 @@ aws elasticbeanstalk update-environment \
 # Wait until environment is ready
 yellow "Waiting until update is complete..."
 sleep 60
-retries=10
+retries=11
 curr_retry=1
 until env_ready; do
   if [[ $curr_retry -ge $retries ]]; then
