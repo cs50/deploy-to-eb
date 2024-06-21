@@ -5,7 +5,7 @@ set -e -o pipefail
 # Configure git
 git config --global --add safe.directory /github/workspace
 
-# Renamed input paramaters
+# Renamed input parameters
 export AWS_ACCESS_KEY_ID="$INPUT_AWS_ACCESS_KEY_ID"
 export AWS_SECRET_ACCESS_KEY="$INPUT_AWS_SECRET_ACCESS_KEY"
 export AWS_DEFAULT_REGION="$INPUT_AWS_DEFAULT_REGION"
@@ -30,6 +30,15 @@ yellow "App bundle name: $ZIP_NAME"
 yellow "Creating app bundle..."
 zip -r "$ZIP_NAME" . -x 'docker-compose*' '.git*'
 
+# Add docker-compose.prod.yaml to the ZIP file if it exists
+if [ -f docker-compose.prod.yaml ]; then
+    yellow "Adding docker-compose.prod.yaml to the app bundle as docker-compose.yaml..."
+    mv docker-compose.prod.yaml docker-compose.yaml
+    zip -g "$ZIP_NAME" docker-compose.yaml
+else
+    yellow "docker-compose.prod.yaml not found, skipping addition to the app bundle..."
+fi
+
 env_ready() {
   aws elasticbeanstalk describe-environment-health \
     --environment-name "$INPUT_ENV_NAME" \
@@ -37,7 +46,7 @@ env_ready() {
 }
 
 # Ensure environment is ready
-yellow "Ensuring enviornment is ready..."
+yellow "Ensuring environment is ready..."
 max_retries=30
 curr_retry=1
 until env_ready; do
@@ -83,8 +92,7 @@ until env_ready; do
   curr_retry=$(( $curr_retry + 1 ))
 done
 
-
-# Check if dpeloyment succeeded
+# Check if deployment succeeded
 yellow "Checking if deployment succeeded..."
 env_ready && aws elasticbeanstalk describe-environments \
   --application-name "$INPUT_APP_NAME" \
