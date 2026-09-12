@@ -64,7 +64,10 @@ aws s3 cp "$ZIP_NAME" "s3://$INPUT_BUCKET/$INPUT_APP_NAME/"
 
 # Create new application version
 yellow "Creating a new app version..."
-description="$(git log -1 --pretty=%B) (${GITHUB_SHA:0:7})"
+# Elastic Beanstalk limits the description to 200 characters, so use only the commit
+# subject line and truncate defensively
+description="$(git log -1 --pretty=%s) (${GITHUB_SHA:0:7})"
+description="${description:0:200}"
 aws elasticbeanstalk create-application-version \
   --application-name "$INPUT_APP_NAME" \
   --description "$description" \
