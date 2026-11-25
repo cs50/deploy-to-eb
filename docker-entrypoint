@@ -10,6 +10,14 @@ export AWS_ACCESS_KEY_ID="$INPUT_AWS_ACCESS_KEY_ID"
 export AWS_SECRET_ACCESS_KEY="$INPUT_AWS_SECRET_ACCESS_KEY"
 export AWS_DEFAULT_REGION="$INPUT_AWS_DEFAULT_REGION"
 
+# Workflow logs are public in public repositories. The AWS CLI echoes ARNs and
+# bucket names, both of which embed the account ID, so ask the runner to mask it
+# wherever it appears (including in error messages). Best effort: a key without
+# sts:GetCallerIdentity should still be able to deploy.
+if account="$(aws sts get-caller-identity --query Account --output text 2>/dev/null)"; then
+    echo "::add-mask::$account"
+fi
+
 # Default inputs from env
 INPUT_ENV_NAME="${INPUT_ENV_NAME:=$INPUT_APP_NAME}"
 UUID="$(python -c 'import uuid; print(uuid.uuid4().hex)')"
@@ -58,9 +66,9 @@ until env_ready; do
   curr_retry=$(( $curr_retry + 1 ))
 done
 
-# Upload zip to S3
+# Upload zip to S3. Only errors are printed, so the bucket name stays out of the log.
 yellow "Uploading app version..."
-aws s3 cp "$ZIP_NAME" "s3://$INPUT_BUCKET/$INPUT_APP_NAME/"
+aws s3 cp "$ZIP_NAME" "s3://$INPUT_BUCKET/$INPUT_APP_NAME/" --only-show-errors
 
 # Create new application version
 yellow "Creating a new app version..."
@@ -68,18 +76,23 @@ yellow "Creating a new app version..."
 # subject line and truncate defensively
 description="$(git log -1 --pretty=%s) (${GITHUB_SHA:0:7})"
 description="${description:0:200}"
+# The full response includes the version's ARN and source bucket; log only its status.
 aws elasticbeanstalk create-application-version \
   --application-name "$INPUT_APP_NAME" \
   --description "$description" \
   --version-label "$INPUT_VERSION_LABEL" \
-  --source-bundle S3Bucket="$INPUT_BUCKET",S3Key="$INPUT_APP_NAME/$ZIP_NAME"
+  --source-bundle S3Bucket="$INPUT_BUCKET",S3Key="$INPUT_APP_NAME/$ZIP_NAME" \
+  --query 'ApplicationVersion.Status' --output text
 
 # Deploy application version
 yellow "Updating environment..."
+# The full response includes the environment ID, load balancer hostname and
+# CNAME; log only its status.
 aws elasticbeanstalk update-environment \
   --application-name "$INPUT_APP_NAME" \
   --environment-name "$INPUT_ENV_NAME" \
-  --version-label "$INPUT_VERSION_LABEL"
+  --version-label "$INPUT_VERSION_LABEL" \
+  --query 'Status' --output text
 
 # Wait until environment is ready
 yellow "Waiting until update is complete..."
